@@ -1,6 +1,7 @@
 #include<iostream>
 #include<fstream>
 #include <string>
+#include <list>
 
 using namespace std;
 
@@ -26,7 +27,7 @@ public:
 };
 
 template<class T>
-T MyStack<T>::getTop(){
+T MyStack<T>::getTop() {
     return d[top];
 }
 
@@ -44,7 +45,7 @@ template<class T>
 T MyStack<T>::pop() {
     if (top == -1) {
         cout << "\n Empty Stack!";
-        return ' ';
+        return " ";
     }
     return d[top--];
 }
@@ -62,73 +63,144 @@ T MyStack<T>::pop() {
 //    cout << endl;
 //}
 
-int calculatePrecedence(char c) {
-    if (c == '^')
+int calculatePrecedence(const string& c) {
+    if (c == "^")
+        return 5;
+    else if (c == "*" || c == "/")
+        return 4;
+    else if (c == "+" || c == "-")
         return 3;
-    else if (c == '*' || c == '/')
+    else if(c == "&" || c=="|")
         return 2;
-    else if (c == '+' || c == '-')
+    else if(c == "&&" || c=="||")
         return 1;
+    else if (c == "<" || c==">" || c == "<=" || c==">=")
+        return 0;
     else
         return -1;
 }
 
-string infixToPostfix(string s) {
-    MyStack<char> st(100);
-    st.push('?');
-    int l = s.length();
-    string ns;
-    for (int i = 0; i < l; i++) {
+list<string> infixToPostfix(list<string> s) {
+    MyStack<string> st(100);
+    st.push("?");
+    list<string> ns;
 
-        //// If the scanned character is
-        //// an operand, add it to output string.
-        if (isalnum(s[i]))
-            ns += s[i];
+    list<string>::iterator it;
+    for (it = s.begin(); it != s.end(); ++it) {
 
+        if ((*it).size() == 1) {
             //// If the scanned character is
-            //// ‘(‘, push it to the stack.
-        else if (s[i] == '(')
-
-            st.push('(');
-
-            //// If the scanned character is ‘)’,
-            //// pop and to output string from the stack
-            //// until an ‘(‘ is encountered.
-        else if (s[i] == ')') {
-            while (st.getTop() != '?' && st.getTop() != '(') {
-                char c = st.getTop();
-                st.pop();
-                ns += c;
+            //// an operand, add it to output string.
+            if (isalnum((*it)[0])) {
+                ns.push_back(*it);
             }
-            if (st.getTop() == '(') {
-                st.pop();
+                //// If the scanned character is
+                //// ‘(‘, push it to the stack.
+            else if ((*it)[0] == '(') {
+                st.push("(");
             }
+                //// If the scanned character is ‘)’,
+                //// pop and to output string from the stack
+                //// until an ‘(‘ is encountered.
+            else if ((*it)[0] == ')') {
+                while (st.getTop() != "?" && st.getTop() != "(") {
+                    string c = st.getTop();
+                    st.pop();
+                    string toPush;
+                    toPush += c;
+                    ns.push_back(toPush);
+                }
+
+                if (st.getTop() == "(") {
+                    st.pop();
+                }
+            }
+                ///If an operator is scanned
+            else {
+                while (st.getTop() != "?" && calculatePrecedence((*it)) <=
+                                             calculatePrecedence(st.getTop())) {
+                    string c = st.getTop();
+                    st.pop();
+                    string toPush;
+                    toPush += c;
+                    ns.push_back(toPush);
+                }
+                st.push(*it);
+            }
+        } else {
+                ns.push_back(*it);
         }
 
-            //If an operator is scanned
-        else {
-            while (st.getTop() != '?' && calculatePrecedence(s[i]) <=
-                                         calculatePrecedence(st.getTop())) {
-                char c = st.getTop();
-                st.pop();
-                ns += c;
-            }
-            st.push(s[i]);
-        }
 
     }
 
     // Pop all the remaining elements from the stack
-    while (st.getTop() != '?') {
-        char c = st.getTop();
+    while (st.getTop() != "?") {
+        string c = st.getTop();
         st.pop();
-        ns += c;
+        string toPush;
+        toPush += c;
+        ns.push_back(toPush);
     }
 
     return ns;
 
 }
 
+void showList(list<string> g, bool isResult) {
+    list<string>::iterator it;
+    for (it = g.begin(); it != g.end(); ++it) {
+        if (isResult)
+            cout << *it << " ";
+        else
+            cout << *it;
+    }
+    cout << '\n';
+}
+
+list<string> parseOperatorsOperands(string infix) {
+    list<string> infix_list;
+
+    string number;
+    for (int i = 0; i < infix.length();) {
+        if (isalpha(infix[i])) {
+            string letter;
+            letter += infix[i];
+            infix_list.push_back(letter);
+            i++;
+            continue;
+        } else if (isdigit(infix[i])) {
+            number += infix[i];
+            i++;
+            while (isdigit(infix[i]) || infix[i] == '.') {
+                number += infix[i];
+                i++;
+            }
+            infix_list.push_back(number);
+            number = "";
+            continue;
+        } else if (infix[i] == '&') {
+            infix_list.emplace_back("&&");
+            i += 2;
+            continue;
+        } else if (infix[i] == '|') {
+            infix_list.emplace_back("||");
+            i += 2;
+            continue;
+        } else {
+
+            string op;
+            op += infix[i];
+            infix_list.push_back(op);
+            i++;
+            continue;
+        }
+    }
+
+    cout << "\nGiven infix : ";
+    showList(infix_list, false);
+    return infix_list;
+}
 
 int main() {
     ifstream fin;
@@ -137,15 +209,21 @@ int main() {
 
     fin.open("infix.txt");
 
-    if(fin.is_open()) {
+    if (fin.is_open()) {
         while (fin) {
-            getline(fin,line);
-            cout << infixToPostfix(line) << endl;
+            getline(fin, line);
+            if (!line.empty()) {
+                list<string> exp = parseOperatorsOperands(line);
+                list<string> converted = infixToPostfix(exp);
+                cout << "Result :";
+                showList(converted, true);
+                cout << endl;
+            }
         }
 
         fin.close();
 
-    }else{
+    } else {
         cout << "Error reading from file";
     }
     return 0;
