@@ -63,18 +63,18 @@ T MyStack<T>::pop() {
 //    cout << endl;
 //}
 
-int calculatePrecedence(const string& c) {
+int calculatePrecedence(const string &c) {
     if (c == "^")
         return 5;
     else if (c == "*" || c == "/")
         return 4;
     else if (c == "+" || c == "-")
         return 3;
-    else if(c == "&" || c=="|")
+    else if (c == "&" || c == "|")
         return 2;
-    else if(c == "&&" || c=="||")
+    else if (c == "&&" || c == "||" || c=="!")
         return 1;
-    else if (c == "<" || c==">" || c == "<=" || c==">=")
+    else if (c == "<" || c == ">" || c == "<=" || c == ">=")
         return 0;
     else
         return -1;
@@ -128,7 +128,19 @@ list<string> infixToPostfix(list<string> s) {
                 st.push(*it);
             }
         } else {
+            if (isdigit((*it)[0])) {
                 ns.push_back(*it);
+            } else {
+                while (st.getTop() != "?" && calculatePrecedence((*it)) <=
+                                             calculatePrecedence(st.getTop())) {
+                    string c = st.getTop();
+                    st.pop();
+                    string toPush;
+                    toPush += c;
+                    ns.push_back(toPush);
+                }
+                st.push(*it);
+            }
         }
 
 
@@ -149,6 +161,7 @@ list<string> infixToPostfix(list<string> s) {
 
 void showList(list<string> g, bool isResult) {
     list<string>::iterator it;
+
     for (it = g.begin(); it != g.end(); ++it) {
         if (isResult)
             cout << *it << " ";
