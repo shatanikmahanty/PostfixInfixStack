@@ -162,13 +162,20 @@ list<string> infixToPostfix(list<string> s) {
 void showList(list<string> g, bool isResult) {
     list<string>::iterator it;
 
+    ofstream myfile;
+    myfile.open("output.txt",ios::app);
+
     for (it = g.begin(); it != g.end(); ++it) {
-        if (isResult)
+        if (isResult) {
             cout << *it << " ";
+            myfile << *it << " ";
+        }
         else
             cout << *it;
     }
     cout << '\n';
+    myfile << "\n";
+    myfile.close();
 }
 
 list<string> parseOperatorsOperands(string infix) {
@@ -219,6 +226,10 @@ int main() {
     ifstream fin;
 
     string line;
+    ofstream myfile;
+    myfile.open("output.txt");
+    myfile << "";
+    myfile.close();
 
     fin.open("infix.txt");
 
@@ -228,7 +239,7 @@ int main() {
             if (!line.empty()) {
                 list<string> exp = parseOperatorsOperands(line);
                 list<string> converted = infixToPostfix(exp);
-                cout << "Result :";
+                cout << "Result : ";
                 showList(converted, true);
                 cout << endl;
             }
