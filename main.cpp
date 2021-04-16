@@ -175,8 +175,7 @@ void showList(list<string> g, bool isResult) {
     }
     cout << '\n';
     myfile << "\n";
-    myfile.close();
-}
+    myfile.close();}
 
 list<string> parseOperatorsOperands(string infix) {
     list<string> infix_list;

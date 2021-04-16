@@ -1,0 +1,3 @@
+D:/PostfixInfixStack/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/PostfixInfixStack/cmake-build-debug/CMakeFiles/PostfixInfixStack.dir
+D:/PostfixInfixStack/cmake-build-debug/CMakeFiles/rebuild_cache.dir
